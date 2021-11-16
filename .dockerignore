@@ -8,3 +8,4 @@ secret_key.txt
 setup.cfg
 setup.py
 dist
+.venv

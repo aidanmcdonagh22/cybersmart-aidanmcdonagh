@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+
+  webapp:
+    build: .
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8080"
+    env_file:
+      - database.env # configure postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    links:
+      - "database:db"
+    networks:
+      - todo
+    volumes:
+      - ./:/usr/src/app
+
+  database:
+    image: "postgres" # use latest version
+    env_file:
+      - database.env # configure postgres
+    restart: always
+    volumes:
+      - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+    ports:
+      - "5432:5432"
+    networks:
+      - todo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  todo:
+
+volumes:
+  database-data: # named volumes can be managed easier using docker-compose
